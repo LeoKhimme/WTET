@@ -5,6 +5,7 @@ const resultEl = document.getElementById("result");
 const spinBtn = document.getElementById("spinBtn");
 const menuInput = document.getElementById("menuInput");
 const addMenuBtn = document.getElementById("addMenuBtn");
+const removeMenuBtn = document.getElementById("removeMenuBtn");
 
 let menuItems = ['김밥', '라면', '돈까스', '된장찌개', '제육볶음', '비빔밥', '우동', '칼국수'];
 const colors = ['#FFD700', '#FF8C00', '#FF69B4', '#ADFF2F', '#87CEEB', '#FFB6C1', '#98FB98', '#FFA07A'];
@@ -14,7 +15,7 @@ let rotation = 0;
 let spinning = false;
 
 function drawWheel() {
-  ctx.clearRect(0, 0, 400, 400);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
   const anglePerSlice = (2 * Math.PI) / menuItems.length;
 
   for (let i = 0; i < menuItems.length; i++) {
@@ -56,7 +57,6 @@ function spinWheel() {
     rotation = totalRotation * easing;
     startAngle = rotation;
 
-    ctx.clearRect(0, 0, 400, 400);
     drawWheel();
 
     if (progress < 1) {
@@ -87,22 +87,47 @@ addMenuBtn.addEventListener("click", () => {
   }
 });
 
+removeMenuBtn.addEventListener("click", () => {
+  const value = menuInput.value.trim();
+  if (!value) {
+    alert("삭제할 메뉴를 입력하세요.");
+    return;
+  }
+  const index = menuItems.indexOf(value);
+  if (index === -1) {
+    alert(`'${value}' 메뉴가 존재하지 않습니다.`);
+    return;
+  }
+  const confirmDelete = confirm(`'${value}' 메뉴를 삭제할까요?`);
+  if (confirmDelete) {
+    menuItems.splice(index, 1);
+    drawWheel();
+    menuInput.value = "";
+  }
+});
+
 canvas.addEventListener("click", (e) => {
   const rect = canvas.getBoundingClientRect();
   const x = e.clientX - rect.left - 200;
   const y = e.clientY - rect.top - 200;
-  const angle = (Math.atan2(y, x) - startAngle + 2 * Math.PI) % (2 * Math.PI);
+
+  const distance = Math.sqrt(x * x + y * y);
+  if (distance > 200) return; // 바깥 클릭 무시
+
+  const angleFromClick = Math.atan2(y, x);
+  const correctedStartAngle = startAngle % (2 * Math.PI);
+  const angle = (angleFromClick - correctedStartAngle + 2 * Math.PI) % (2 * Math.PI);
   const anglePerSlice = (2 * Math.PI) / menuItems.length;
   const index = Math.floor(angle / anglePerSlice);
 
   const item = menuItems[index];
-if (item) {
-  const confirmDelete = confirm(`'${item}' 메뉴를 삭제할까요?`);
-  if (confirmDelete) {
-    menuItems.splice(index, 1);
-    drawWheel();
+  if (item) {
+    const confirmDelete = confirm(`'${item}' 메뉴를 삭제할까요?`);
+    if (confirmDelete) {
+      menuItems.splice(index, 1);
+      drawWheel();
+    }
   }
-}
 });
 
 drawWheel();

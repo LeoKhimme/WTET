@@ -67,6 +67,11 @@
       border-top: 25px solid red;
     }
 
+    #wheel {
+      display: block;
+      margin: 0 auto;
+    }
+
     #spinBtn {
       padding: 0.75rem 1.5rem;
       font-size: 16px;
@@ -142,9 +147,8 @@
   </div>
   <button id="spinBtn">돌려!</button>
   <div id="result"></div>
-  <script>
-    // 기존 JavaScript 코드 그대로 유지
-  </script>
+  <div class="confetti-container" id="confetti"></div>
+  <script src="script.js"></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
