@@ -1,134 +1,118 @@
-const canvas = document.getElementById("wheel");
-const ctx = canvas.getContext("2d");
-const resultEl = document.getElementById("result");
-const spinBtn = document.getElementById("spinBtn");
-const menuInput = document.getElementById("menuInput");
-const addMenuBtn = document.getElementById("addMenuBtn");
-const removeMenuBtn = document.getElementById("removeMenuBtn");
+/* style.css */
 
-let menuItems = ['김밥', '라면', '돈까스', '된장찌개', '제육볶음', '비빔밥', '우동', '칼국수'];
-const colors = ['#FFD700', '#FF8C00', '#FF69B4', '#ADFF2F', '#87CEEB', '#FFB6C1', '#98FB98', '#FFA07A'];
+body {
+  margin: 0;
+  font-family: 'Arial', sans-serif;
+  background-color: #f9f9f9;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
 
-let startAngle = 0;
-let rotation = 0;
-let spinning = false;
+.container {
+  text-align: center;
+  padding: 20px;
+  max-width: 500px;
+  width: 100%;
+}
 
-function drawWheel() {
-  ctx.clearRect(0, 0, 400, 400);
-  const anglePerSlice = (2 * Math.PI) / menuItems.length;
+canvas {
+  max-width: 100%;
+  height: auto;
+  border: 5px solid #ccc;
+  border-radius: 50%;
+  margin-bottom: 20px;
+}
 
-  for (let i = 0; i < menuItems.length; i++) {
-    const angle = startAngle + i * anglePerSlice;
+.controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
 
-    ctx.beginPath();
-    ctx.moveTo(200, 200);
-    ctx.arc(200, 200, 200, angle, angle + anglePerSlice);
-    ctx.fillStyle = colors[i % colors.length];
-    ctx.fill();
-    ctx.stroke();
+.controls input {
+  flex: 1;
+  min-width: 120px;
+  padding: 8px;
+  font-size: 16px;
+}
 
-    ctx.save();
-    ctx.translate(200, 200);
-    ctx.rotate(angle + anglePerSlice / 2);
-    ctx.textAlign = "right";
-    ctx.fillStyle = "#000";
-    ctx.font = "16px Arial";
-    ctx.fillText(menuItems[i], 190, 10);
-    ctx.restore();
+.controls button {
+  padding: 8px 12px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.spin-button {
+  font-size: 20px;
+  padding: 10px 20px;
+  margin: 10px 0;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.result-text {
+  font-size: 18px;
+  margin-top: 10px;
+  min-height: 24px;
+}
+
+.result-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 32px;
+  background: #fff;
+  border: 3px solid #333;
+  padding: 20px 30px;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  display: none;
+  z-index: 1000;
+}
+
+#confetti {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 999;
+}
+
+.confetti {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  opacity: 0.8;
+  animation: fall linear forwards;
+}
+
+@keyframes fall {
+  0% {
+    transform: translateY(-10%) rotate(0deg);
+  }
+  100% {
+    transform: translateY(100vh) rotate(360deg);
   }
 }
 
-function spinWheel() {
-  if (spinning) return;
-  spinning = true;
-  resultEl.textContent = "돌리는 중... 🎯";
-
-  let duration = 4000;
-  let finalAngle = Math.random() * 2 * Math.PI;
-  let totalRotation = (Math.PI * 10) + finalAngle;
-  const start = performance.now();
-
-  function animate(now) {
-    const elapsed = now - start;
-    const progress = Math.min(elapsed / duration, 1);
-    const easing = 1 - Math.pow(1 - progress, 3);
-
-    rotation = totalRotation * easing;
-    startAngle = rotation;
-
-    ctx.clearRect(0, 0, 400, 400);
-    drawWheel();
-
-    if (progress < 1) {
-      requestAnimationFrame(animate);
-    } else {
-      spinning = false;
-      showResult();
-    }
+@media screen and (max-width: 768px) {
+  canvas {
+    width: 100%;
+    height: auto;
   }
 
-  requestAnimationFrame(animate);
+  .result-popup {
+    font-size: 24px;
+  }
 }
-
-function showResult() {
-  const anglePerSlice = (2 * Math.PI) / menuItems.length;
-  const pointerAngle = (3 * Math.PI / 2 - (rotation % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
-  const index = Math.floor(pointerAngle / anglePerSlice);
-  const selected = menuItems[index];
-  resultEl.textContent = `오늘의 점심은 👉 ${selected}! 🍽️`;
-}
-
-addMenuBtn.addEventListener("click", () => {
-  const value = menuInput.value.trim();
-  if (value && !menuItems.includes(value)) {
-    menuItems.push(value);
-    drawWheel();
-    menuInput.value = "";
-  }
-});
-
-removeMenuBtn.addEventListener("click", () => {
-  const value = menuInput.value.trim();
-  if (!value) {
-    alert("삭제할 메뉴를 입력하세요.");
-    return;
-  }
-  const index = menuItems.indexOf(value);
-  if (index === -1) {
-    alert(`'${value}' 메뉴가 존재하지 않습니다.`);
-    return;
-  }
-  const confirmDelete = confirm(`'${value}' 메뉴를 삭제할까요?`);
-  if (confirmDelete) {
-    menuItems.splice(index, 1);
-    drawWheel();
-    menuInput.value = "";
-  }
-});
-
-canvas.addEventListener("click", (e) => {
-  const rect = canvas.getBoundingClientRect();
-  const x = e.clientX - rect.left - 200;
-  const y = e.clientY - rect.top - 200;
-
-  const distance = Math.sqrt(x * x + y * y);
-  if (distance > 200) return; // 바깥 클릭 무시
-
-  const angleFromClick = Math.atan2(y, x);
-  const correctedStartAngle = startAngle % (2 * Math.PI);
-  const angle = (angleFromClick - correctedStartAngle + 2 * Math.PI) % (2 * Math.PI);
-  const anglePerSlice = (2 * Math.PI) / menuItems.length;
-  const index = Math.floor(angle / anglePerSlice);
-
-  const item = menuItems[index];
-  if (item) {
-    const confirmDelete = confirm(`'${item}' 메뉴를 삭제할까요?`);
-    if (confirmDelete) {
-      menuItems.splice(index, 1);
-      drawWheel();
-    }
-  }
-});
-
-drawWheel();
-spinBtn.addEventListener("click", spinWheel);

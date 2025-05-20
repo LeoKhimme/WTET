@@ -2,195 +2,32 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="점심 메뉴를 룰렛으로 간편하게 결정하세요!" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="style.css" />
   <title>점심 룰렛</title>
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#f9f9f9">
-  <link rel="icon" href="1.jpg" type="image/jpeg">
-  <meta property="og:title" content="점심 메뉴 룰렛">
-  <meta property="og:description" content="오늘 점심 뭐 먹지? 룰렛으로 골라보세요!">
-  <meta property="og:image" content="2.jpg">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content=".">
-  <style>
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'Noto Sans KR', sans-serif;
-      background-color: #f9f9f9;
-      text-align: center;
-      padding: 2rem;
-      margin: 0;
-    }
-
-    h1 {
-      font-size: 2rem;
-      margin-bottom: 1rem;
-    }
-
-    .menu-input {
-      margin-bottom: 1rem;
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-    }
-
-    .menu-input input {
-      padding: 0.5rem;
-      font-size: 16px;
-      width: 200px;
-      max-width: 80vw;
-    }
-
-    .menu-input button {
-      padding: 0.5rem 1rem;
-      background-color: #3498db;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    .menu-input button:hover {
-      background-color: #2980b9;
-    }
-
-    .roulette-wrapper {
-      position: relative;
-      display: inline-block;
-      margin-bottom: 1rem;
-      width: 100%;
-      max-width: 400px;
-    }
-
-    .arrow {
-      position: absolute;
-      top: -20px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 0;
-      height: 0;
-      border-left: 15px solid transparent;
-      border-right: 15px solid transparent;
-      border-top: 25px solid red;
-    }
-
-    #wheel {
-      display: block;
-      margin: 0 auto;
-      width: 100%;
-      height: auto;
-    }
-
-    #spinBtn {
-      padding: 0.75rem 1.5rem;
-      font-size: 16px;
-      background-color: orange;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background-color 0.3s;
-    }
-
-    #spinBtn:hover {
-      background-color: darkorange;
-    }
-
-    #result {
-      margin-top: 1rem;
-      font-size: 1.25rem;
-      font-weight: bold;
-      color: #333;
-    }
-
-    .confetti-container {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      overflow: hidden;
-      z-index: 1000;
-    }
-
-    .confetti {
-      position: absolute;
-      width: 10px;
-      height: 10px;
-      opacity: 0.7;
-      animation: fall 3s linear infinite;
-    }
-
-    @keyframes fall {
-      0% { transform: translateY(-100px) rotate(0deg); }
-      100% { transform: translateY(100vh) rotate(360deg); }
-    }
-
-    .result-popup {
-      position: fixed;
-      top: 30%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: white;
-      border: 3px solid orange;
-      border-radius: 15px;
-      padding: 2rem 3rem;
-      font-size: 2rem;
-      font-weight: bold;
-      color: #d35400;
-      box-shadow: 0 0 15px rgba(0,0,0,0.2);
-      z-index: 1100;
-      display: none;
-    }
-
-    @media (min-width: 768px) {
-      h1 {
-        font-size: 2.5rem;
-      }
-      .menu-input input {
-        font-size: 18px;
-        width: 250px;
-      }
-      #spinBtn {
-        font-size: 18px;
-      }
-      #result {
-        font-size: 1.5rem;
-      }
-    }
-  </style>
 </head>
 <body>
-  <h1>점심 메뉴 룰렛</h1>
-  <div class="menu-input">
-    <input type="text" id="menuInput" placeholder="메뉴를 입력하세요" />
-    <button id="addMenuBtn">추가</button>
-    <button id="removeMenuBtn">제거</button>
-  </div>
-  <div class="roulette-wrapper">
-    <div class="arrow"></div>
+  <div class="container">
+    <h1>점심 룰렛 🍽️</h1>
+
     <canvas id="wheel" width="400" height="400"></canvas>
+
+    <div class="controls">
+      <input id="menuInput" type="text" placeholder="메뉴 입력" />
+      <button id="addMenuBtn">추가</button>
+      <button id="removeMenuBtn">삭제</button>
+    </div>
+
+    <button id="spinBtn" class="spin-button">돌리기 🎡</button>
+    <div id="result" class="result-text"></div>
+    <div id="popupResult" class="result-popup"></div>
   </div>
-  <button id="spinBtn">돌려!</button>
-  <div id="result"></div>
-  <div class="confetti-container" id="confetti"></div>
-  <div class="result-popup" id="popupResult"></div>
+
+  <div id="confetti"></div>
+
   <script src="script.js"></script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js').then(() => {
-          console.log('서비스 워커 등록 성공');
-        }).catch(err => {
-          console.error('서비스 워커 등록 실패:', err);
-        });
-      });
-    }
-  </script>
 </body>
 </html>
+
