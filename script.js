@@ -1,4 +1,3 @@
-// script.js
 const canvas = document.getElementById("wheel");
 const ctx = canvas.getContext("2d");
 const resultEl = document.getElementById("result");
@@ -14,7 +13,14 @@ let startAngle = 0;
 let rotation = 0;
 let spinning = false;
 
+function resizeCanvas() {
+  canvas.width = canvas.offsetWidth;
+  canvas.height = canvas.offsetWidth;
+}
+
 function drawWheel() {
+  resizeCanvas();
+  const center = canvas.width / 2;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   const anglePerSlice = (2 * Math.PI) / menuItems.length;
 
@@ -22,19 +28,19 @@ function drawWheel() {
     const angle = startAngle + i * anglePerSlice;
 
     ctx.beginPath();
-    ctx.moveTo(200, 200);
-    ctx.arc(200, 200, 200, angle, angle + anglePerSlice);
+    ctx.moveTo(center, center);
+    ctx.arc(center, center, center, angle, angle + anglePerSlice);
     ctx.fillStyle = colors[i % colors.length];
     ctx.fill();
     ctx.stroke();
 
     ctx.save();
-    ctx.translate(200, 200);
+    ctx.translate(center, center);
     ctx.rotate(angle + anglePerSlice / 2);
     ctx.textAlign = "right";
     ctx.fillStyle = "#000";
-    ctx.font = "16px Arial";
-    ctx.fillText(menuItems[i], 190, 10);
+    ctx.font = `${Math.max(14, canvas.width / 30)}px Arial`;
+    ctx.fillText(menuItems[i], center - 10, 10);
     ctx.restore();
   }
 }
@@ -108,11 +114,11 @@ removeMenuBtn.addEventListener("click", () => {
 
 canvas.addEventListener("click", (e) => {
   const rect = canvas.getBoundingClientRect();
-  const x = e.clientX - rect.left - 200;
-  const y = e.clientY - rect.top - 200;
+  const x = e.clientX - rect.left - canvas.width / 2;
+  const y = e.clientY - rect.top - canvas.height / 2;
 
   const distance = Math.sqrt(x * x + y * y);
-  if (distance > 200) return; // 바깥 클릭 무시
+  if (distance > canvas.width / 2) return;
 
   const angleFromClick = Math.atan2(y, x);
   const correctedStartAngle = startAngle % (2 * Math.PI);
@@ -130,5 +136,6 @@ canvas.addEventListener("click", (e) => {
   }
 });
 
+window.addEventListener("resize", drawWheel);
 drawWheel();
 spinBtn.addEventListener("click", spinWheel);
