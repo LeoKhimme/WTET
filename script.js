@@ -1,3 +1,5 @@
+// script.js
+
 const canvas = document.getElementById("wheel");
 const ctx = canvas.getContext("2d");
 const resultEl = document.getElementById("result");
@@ -5,6 +7,8 @@ const spinBtn = document.getElementById("spinBtn");
 const menuInput = document.getElementById("menuInput");
 const addMenuBtn = document.getElementById("addMenuBtn");
 const removeMenuBtn = document.getElementById("removeMenuBtn");
+const confettiContainer = document.getElementById("confetti");
+const popupResult = document.getElementById("popupResult");
 
 let menuItems = ['김밥', '라면', '돈까스', '된장찌개', '제육볶음', '비빔밥', '우동', '칼국수'];
 const colors = ['#FFD700', '#FF8C00', '#FF69B4', '#ADFF2F', '#87CEEB', '#FFB6C1', '#98FB98', '#FFA07A'];
@@ -13,14 +17,7 @@ let startAngle = 0;
 let rotation = 0;
 let spinning = false;
 
-function resizeCanvas() {
-  canvas.width = canvas.offsetWidth;
-  canvas.height = canvas.offsetWidth;
-}
-
 function drawWheel() {
-  resizeCanvas();
-  const center = canvas.width / 2;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   const anglePerSlice = (2 * Math.PI) / menuItems.length;
 
@@ -28,19 +25,19 @@ function drawWheel() {
     const angle = startAngle + i * anglePerSlice;
 
     ctx.beginPath();
-    ctx.moveTo(center, center);
-    ctx.arc(center, center, center, angle, angle + anglePerSlice);
+    ctx.moveTo(200, 200);
+    ctx.arc(200, 200, 200, angle, angle + anglePerSlice);
     ctx.fillStyle = colors[i % colors.length];
     ctx.fill();
     ctx.stroke();
 
     ctx.save();
-    ctx.translate(center, center);
+    ctx.translate(200, 200);
     ctx.rotate(angle + anglePerSlice / 2);
     ctx.textAlign = "right";
     ctx.fillStyle = "#000";
-    ctx.font = `${Math.max(14, canvas.width / 30)}px Arial`;
-    ctx.fillText(menuItems[i], center - 10, 10);
+    ctx.font = "16px Arial";
+    ctx.fillText(menuItems[i], 190, 10);
     ctx.restore();
   }
 }
@@ -49,6 +46,7 @@ function spinWheel() {
   if (spinning) return;
   spinning = true;
   resultEl.textContent = "돌리는 중... 🎯";
+  popupResult.style.display = "none";
 
   let duration = 4000;
   let finalAngle = Math.random() * 2 * Math.PI;
@@ -82,6 +80,29 @@ function showResult() {
   const index = Math.floor(pointerAngle / anglePerSlice);
   const selected = menuItems[index];
   resultEl.textContent = `오늘의 점심은 👉 ${selected}! 🍽️`;
+  launchConfetti();
+  showPopup(selected);
+}
+
+function showPopup(text) {
+  popupResult.textContent = `🎉 ${text} 🎉`;
+  popupResult.style.display = "block";
+  setTimeout(() => {
+    popupResult.style.display = "none";
+  }, 3000);
+}
+
+function launchConfetti() {
+  confettiContainer.innerHTML = '';
+  for (let i = 0; i < 100; i++) {
+    const confetti = document.createElement("div");
+    confetti.classList.add("confetti");
+    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+    confetti.style.left = `${Math.random() * 100}%`;
+    confetti.style.animationDuration = `${2 + Math.random() * 2}s`;
+    confettiContainer.appendChild(confetti);
+    setTimeout(() => confetti.remove(), 4000);
+  }
 }
 
 addMenuBtn.addEventListener("click", () => {
@@ -114,19 +135,18 @@ removeMenuBtn.addEventListener("click", () => {
 
 canvas.addEventListener("click", (e) => {
   const rect = canvas.getBoundingClientRect();
-  const x = e.clientX - rect.left - canvas.width / 2;
-  const y = e.clientY - rect.top - canvas.height / 2;
-
+  const x = e.clientX - rect.left - 200;
+  const y = e.clientY - rect.top - 200;
   const distance = Math.sqrt(x * x + y * y);
-  if (distance > canvas.width / 2) return;
+  if (distance > 200) return;
 
   const angleFromClick = Math.atan2(y, x);
   const correctedStartAngle = startAngle % (2 * Math.PI);
   const angle = (angleFromClick - correctedStartAngle + 2 * Math.PI) % (2 * Math.PI);
   const anglePerSlice = (2 * Math.PI) / menuItems.length;
   const index = Math.floor(angle / anglePerSlice);
-
   const item = menuItems[index];
+
   if (item) {
     const confirmDelete = confirm(`'${item}' 메뉴를 삭제할까요?`);
     if (confirmDelete) {
@@ -136,6 +156,5 @@ canvas.addEventListener("click", (e) => {
   }
 });
 
-window.addEventListener("resize", drawWheel);
 drawWheel();
 spinBtn.addEventListener("click", spinWheel);
