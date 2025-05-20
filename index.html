@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>점심 메뉴 룰렛</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>점심 메뉴 룰렛 🎯</h1>
+
+  <div class="menu-input">
+    <input type="text" id="menuInput" placeholder="메뉴를 입력하세요">
+    <button id="addMenuBtn">추가</button>
+    <button id="removeMenuBtn">제거</button>
+  </div>
+
+  <div class="roulette-wrapper">
+    <canvas id="wheel" width="400" height="400"></canvas>
+    <div class="arrow"></div>
+  </div>
+
+  <button id="spinBtn">룰렛 돌리기</button>
+  <div id="result"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
+
