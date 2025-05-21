@@ -23,12 +23,14 @@ canvas {
   border: 5px solid #ccc;
   border-radius: 50%;
   margin-bottom: 20px;
+  display: block;
+  margin: 0 auto;
 }
 
 .controls {
   display: flex;
   gap: 10px;
-  margin-bottom: 15px;
+  margin-bottom: 25px;
   flex-wrap: wrap;
   justify-content: center;
 }
@@ -106,10 +108,30 @@ canvas {
   }
 }
 
+.wheel-container {
+  position: relative;
+  display: inline-block;
+}
+
+#pointer {
+  position: absolute;
+  top: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 15px solid transparent;
+  border-right: 15px solid transparent;
+  border-top: 25px solid red;
+  z-index: 10;
+ 
+}
+
 @media screen and (max-width: 768px) {
   canvas {
     width: 100%;
     height: auto;
+  
   }
 
   .result-popup {

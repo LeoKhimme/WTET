@@ -13,6 +13,23 @@ const popupResult = document.getElementById("popupResult");
 let menuItems = ['김밥', '라면', '돈까스', '된장찌개', '제육볶음', '비빔밥', '우동', '칼국수'];
 const colors = ['#FFD700', '#FF8C00', '#FF69B4', '#ADFF2F', '#87CEEB', '#FFB6C1', '#98FB98', '#FFA07A'];
 
+// Load saved menu items from localStorage
+const savedMenus = localStorage.getItem("menuItems");
+if (savedMenus) {
+  try {
+    const parsed = JSON.parse(savedMenus);
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      menuItems = parsed;
+    }
+  } catch (e) {
+    console.error("메뉴 불러오기 실패:", e);
+  }
+}
+
+function saveMenus() {
+  localStorage.setItem("menuItems", JSON.stringify(menuItems));
+}
+
 let startAngle = 0;
 let rotation = 0;
 let spinning = false;
@@ -79,7 +96,7 @@ function showResult() {
   const pointerAngle = (3 * Math.PI / 2 - (rotation % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
   const index = Math.floor(pointerAngle / anglePerSlice);
   const selected = menuItems[index];
-  resultEl.textContent = `오늘의 점심은 👉 ${selected}! 🍽️`;
+  resultEl.textContent = `오늘은 이거 👉 ${selected}! 🍽️`;
   launchConfetti();
   showPopup(selected);
 }
@@ -109,6 +126,7 @@ addMenuBtn.addEventListener("click", () => {
   const value = menuInput.value.trim();
   if (value && !menuItems.includes(value)) {
     menuItems.push(value);
+    saveMenus();
     drawWheel();
     menuInput.value = "";
   }
@@ -128,6 +146,7 @@ removeMenuBtn.addEventListener("click", () => {
   const confirmDelete = confirm(`'${value}' 메뉴를 삭제할까요?`);
   if (confirmDelete) {
     menuItems.splice(index, 1);
+    saveMenus();
     drawWheel();
     menuInput.value = "";
   }
@@ -151,6 +170,7 @@ canvas.addEventListener("click", (e) => {
     const confirmDelete = confirm(`'${item}' 메뉴를 삭제할까요?`);
     if (confirmDelete) {
       menuItems.splice(index, 1);
+      saveMenus();
       drawWheel();
     }
   }

@@ -2,29 +2,35 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="점심 메뉴를 룰렛으로 간편하게 결정하세요!" />
-  <link rel="manifest" href="manifest.json" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>오늘 뭐 먹지?</title>
+
+  <!-- Open Graph 메타 태그 -->
+  <meta property="og:title" content="오늘 뭐 먹지?" />
+  <meta property="og:description" content="메뉴 룰렛으로 고민 끝! 🍽️" />
+  <meta property="og:image" content="images/og-thumbnail.png" />
+  <meta property="og:url" content="https://leokhimme.github.io/WTET/" />
+  <meta property="og:type" content="website" />
+
   <link rel="stylesheet" href="style.css" />
-  <title>점심 룰렛</title>
 </head>
 <body>
   <div class="container">
-    <h1>점심 룰렛 🍽️</h1>
-
-    <canvas id="wheel" width="400" height="400"></canvas>
-
+    <h1>오늘 뭐 먹지? 🍽️</h1>
     <div class="controls">
-      <input id="menuInput" type="text" placeholder="메뉴 입력" />
+      <input type="text" id="menuInput" placeholder="메뉴 추가/삭제">
       <button id="addMenuBtn">추가</button>
       <button id="removeMenuBtn">삭제</button>
     </div>
-
-    <button id="spinBtn" class="spin-button">돌리기 🎡</button>
+    <div class="wheel-container">
+      <div id="pointer"></div>
+      <canvas id="wheel" width="400" height="400"></canvas>
+    </div>
+    <button id="spinBtn" class="spin-button">돌리자!</button>
     <div id="result" class="result-text"></div>
-    <div id="popupResult" class="result-popup"></div>
   </div>
 
+  <div id="popupResult" class="result-popup"></div>
   <div id="confetti"></div>
 
   <script src="script.js"></script>
