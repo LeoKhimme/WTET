@@ -243,7 +243,6 @@ menuInputEl.addEventListener("focus", () => {
 
 function searchNearbyRestaurants(menuKeyword) {
   if (!userLocation) {
-    alert("⚠️ 위치 정보를 먼저 받아야 합니다.");
     return;
   }
 
