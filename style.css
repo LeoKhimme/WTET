@@ -138,3 +138,37 @@ canvas {
     font-size: 24px;
   }
 }
+
+.tooltip {
+  position: absolute;
+  font-size: 16px;
+  background: #e7e7e7;
+  color: #569ee2;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  opacity: 0;
+  transform: translateY(5px);
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  margin-top: 4px;
+  z-index: 10;
+  left: 50%;
+  transform: translate(-50%, 5px);
+}
+
+.tooltip.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.controls {
+  position: relative; /* 툴팁 위치 기준 */
+}
+
+#menuInput {
+  position: relative;
+  z-index: 1;
+}
+

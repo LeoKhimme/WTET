@@ -12,6 +12,11 @@
   <meta property="og:url" content="https://leokhimme.github.io/WTET/" />
   <meta property="og:type" content="website" />
 
+  <!-- 📌 추가: <head> 안 또는 <body> 위 -->
+<!-- Kakao 지도 SDK 로드 (지도 연동 단계 대비용, 지금은 없어도 작동) -->
+<script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=f7f81400574ce80a75b529fbed44e6e0&libraries=services"></script>
+
+
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -19,6 +24,8 @@
     <h1>오늘 뭐 먹지? 🍽️</h1>
     <div class="controls">
       <input type="text" id="menuInput" placeholder="메뉴 추가/삭제">
+      <div class="tooltip" id="menuTooltip">메뉴 클릭하면 빠른 삭제</div>
+
       <button id="addMenuBtn">추가</button>
       <button id="removeMenuBtn">삭제</button>
     </div>
