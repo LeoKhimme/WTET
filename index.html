@@ -13,6 +13,14 @@
   <meta property="og:type" content="website" />
 
   <link rel="stylesheet" href="style.css" />
+  <style>
+    #map {
+      height: 400px;
+      width: 100%;
+      background-color: #f0f0f0; /* Placeholder background */
+      margin-top: 20px; /* Added some margin for spacing to visually separate it */
+    }
+  </style>
 </head>
 <body>
   <div class="container">
@@ -35,13 +43,10 @@
 
   <div id="popupResult" class="result-popup"></div>
   <div id="confetti"></div>
+  <div id="map"></div> <!-- Map container added here -->
 
+  <script src="js/location.js"></script>
   <script src="js/script.js"></script>
-
- 
- 
-
-
+  <script async defer src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap"></script>
 </body>
 </html>
-

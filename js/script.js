@@ -124,6 +124,15 @@ function showResult() {
   const pointerAngle = (3 * Math.PI / 2 - (rotation % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
   const index = Math.floor(pointerAngle / anglePerSlice); // 어떤 조각인지 계산
   const selected = menuItems[index]; // 선택된 메뉴
+  window.selectedMenuItem = selected;
+
+  // Call the location handling function if it exists
+  if (typeof handleMenuSelectionForLocation === 'function') {
+    handleMenuSelectionForLocation();
+  } else {
+    console.warn("handleMenuSelectionForLocation is not defined. Ensure location.js is loaded and the function is global.");
+  }
+
   resultEl.textContent = `오늘은 이거 👉 ${selected}! 🍽️`; // 결과 출력
   launchConfetti(); // 폭죽
   showPopup(selected); // 팝업
