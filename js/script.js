@@ -18,9 +18,10 @@ menuInput.addEventListener("mouseleave", () => {
   tooltip.style.display = "none";
 });
 
-menuInput.addEventListener("click", () => {
-  tooltipEl.classList.remove("show");
-});
+// Removed problematic click listener that likely caused the error on line 18
+// menuInput.addEventListener("click", () => {
+//   tooltipEl.classList.remove("show"); // This tooltipEl was undefined here
+// });
 
 // 메뉴 추가/삭제 버튼과 결과 팝업, 폭죽 효과 영역 가져오기
 const addMenuBtn = document.getElementById("addMenuBtn");
@@ -260,13 +261,28 @@ drawWheel();
 spinBtn.addEventListener("click", spinWheel);
 
 // 툴팁 마우스 이벤트 (ID가 다른 요소용)
-const menuInputEl = document.getElementById("menuInput");
-const tooltipEl = document.getElementById("menuTooltip");
+const menuInputElForTooltip = document.getElementById("menuInput"); // Using a more specific name or reusing menuInput
+const tooltipElement = document.getElementById("menuTooltip"); // Renamed to avoid confusion and follow example
 
-menuInputEl.addEventListener("mouseenter", () => {
-  tooltipEl.classList.add("show");
-});
+if (menuInputElForTooltip && tooltipElement) {
+  menuInputElForTooltip.addEventListener("mouseenter", () => {
+    tooltipElement.classList.add("show");
+  });
 
-menuInputEl.addEventListener("mouseleave", () => {
-  tooltipEl.classList.remove("show");
-});
+  menuInputElForTooltip.addEventListener("mouseleave", () => {
+    tooltipElement.classList.remove("show");
+  });
+
+  // If there was a click listener specifically for menuTooltip, it would go here:
+  // menuInputElForTooltip.addEventListener("click", () => {
+  //   tooltipElement.classList.remove("show"); 
+  // });
+} else {
+  // Optional: Warn if elements are not found, but focus on preventing the error.
+  if (!menuInputElForTooltip) {
+    console.warn("Menu input element (menuInput) not found for tooltip handling.");
+  }
+  if (!tooltipElement) {
+    // console.warn("Tooltip element with ID 'menuTooltip' not found. Tooltip events not attached.");
+  }
+}
