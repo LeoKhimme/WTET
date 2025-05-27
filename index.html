@@ -20,6 +20,40 @@
       background-color: #f0f0f0; /* Placeholder background */
       margin-top: 20px; /* Added some margin for spacing to visually separate it */
     }
+    .recommendation-section {
+      padding: 20px;
+      text-align: center;
+      /* display: none; /* 초기에는 숨겨두고, 결과 나오면 JS로 보이게 처리 - HTML에서 인라인으로 적용 */
+    }
+    .restaurant-list {
+      display: flex;
+      flex-wrap: wrap; /* 작은 화면에서 줄바꿈 허용 */
+      justify-content: space-around; /* 카드들 사이에 공간 배분 */
+      gap: 20px; /* 카드 사이 간격 */
+    }
+    .restaurant-card {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 15px;
+      width: 300px; /* 기본 너비, 화면 크기에 따라 조절 가능 */
+      box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
+      text-align: left;
+    }
+    .restaurant-thumbnail {
+      width: 100%;
+      height: 180px; /* 썸네일 높이 고정 */
+      object-fit: cover; /* 이미지 비율 유지하며 채우기 */
+      border-bottom: 1px solid #eee;
+      margin-bottom: 10px;
+    }
+    .restaurant-info h3 {
+      margin-top: 0;
+      font-size: 1.2em;
+    }
+    .restaurant-info p {
+      margin: 5px 0;
+      font-size: 0.9em;
+    }
   </style>
 </head>
 <body>
@@ -41,12 +75,30 @@
     <div id="result" class="result-text"></div>
   </div>
 
+  <div id="recommendations" class="recommendation-section" style="display: none;"> <!-- 초기에는 숨김 -->
+    <h2>추천 식당</h2>
+    <div class="restaurant-list">
+      <!-- 식당 정보 카드들이 여기에 동적으로 추가될 예정 -->
+      <!-- 예시 카드 구조 (최대 3개): -->
+      <!--
+      <div class="restaurant-card">
+        <img src="placeholder_thumbnail.jpg" alt="식당 이미지" class="restaurant-thumbnail">
+        <div class="restaurant-info">
+          <h3 class="restaurant-name">식당 이름</h3>
+          <p class="restaurant-address">주소</p>
+          <p class="restaurant-rating">평점</p>
+        </div>
+      </div>
+      -->
+    </div>
+  </div>
+
   <div id="popupResult" class="result-popup"></div>
   <div id="confetti"></div>
-  <div id="map"></div> <!-- Map container added here -->
+  <div id="map" style="display: none;"></div> <!-- Map container hidden initially -->
 
   <script src="js/location.js"></script>
   <script src="js/script.js"></script>
-  <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCeJSzlMBSaRKkIPj2qL28B1kvwcsaSrgQ&callback=initMap"></script>
+  <script async defer src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap"></script>
 </body>
 </html>

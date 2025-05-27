@@ -57,30 +57,32 @@ let spinning = false;  // 회전 중 여부
 
 // 룰렛 그리기 함수
 function drawWheel() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height); // 이전 그림 지우기
-  const anglePerSlice = (2 * Math.PI) / menuItems.length; // 각 조각의 각도 계산
+  try {
+    // 기존 drawWheel 코드 내용
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const anglePerSlice = (2 * Math.PI) / menuItems.length;
 
-  for (let i = 0; i < menuItems.length; i++) {
-    const angle = startAngle + i * anglePerSlice;
-
-    // 조각 그리기
-    ctx.beginPath();
-    ctx.moveTo(200, 200);  // 중심점
-    ctx.arc(200, 200, 200, angle, angle + anglePerSlice); // 호 그리기
-    ctx.fillStyle = colors[i % colors.length]; // 색상 반복 사용
-    ctx.fill();
-    ctx.stroke();
-
-    // 텍스트 그리기 (조각 중앙에 메뉴 이름)
-    ctx.save();
-    ctx.translate(200, 200);  // 중심으로 이동
-    ctx.rotate(angle + anglePerSlice / 2);  // 텍스트 회전
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillStyle = "#000";
-    ctx.font = "16px Arial";
-    ctx.fillText(menuItems[i], 130, 10);  // 외곽쪽에 텍스트 표시
-    ctx.restore();
+    for (let i = 0; i < menuItems.length; i++) {
+      const angle = startAngle + i * anglePerSlice;
+      ctx.beginPath();
+      ctx.moveTo(200, 200);
+      ctx.arc(200, 200, 200, angle, angle + anglePerSlice);
+      ctx.fillStyle = colors[i % colors.length];
+      ctx.fill();
+      ctx.stroke();
+      ctx.save();
+      ctx.translate(200, 200);
+      ctx.rotate(angle + anglePerSlice / 2);
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillStyle = "#000";
+      ctx.font = "16px Arial";
+      ctx.fillText(menuItems[i], 130, 10);
+      ctx.restore();
+    }
+  } catch (e) {
+    console.error("Error in drawWheel:", e);
+    spinning = false; // drawWheel에서 에러 발생 시 스핀 상태 강제 종료
   }
 }
 
@@ -99,19 +101,22 @@ function spinWheel() {
   // 애니메이션 함수
   function animate(now) {
     const elapsed = now - start;
-    const progress = Math.min(elapsed / duration, 1); // 진행률 0~1
-    const easing = 1 - Math.pow(1 - progress, 3); // ease-out 효과
+    const progress = Math.min(elapsed / duration, 1);
+    const easing = 1 - Math.pow(1 - progress, 3);
 
-    rotation = totalRotation * easing; // 현재 회전량
-    startAngle = rotation; // 룰렛 시작 각도 업데이트
+    rotation = totalRotation * easing;
+    startAngle = rotation;
 
+    // console.log("Animating, progress:", progress, "spinning:", spinning); // 상세 로그
     drawWheel(); // 현재 상태로 그리기
 
     if (progress < 1) {
-      requestAnimationFrame(animate); // 계속 애니메이션
+      requestAnimationFrame(animate);
     } else {
+      console.log("Animation finished, setting spinning = false. Current spinning state:", spinning);
       spinning = false; // 종료
       showResult(); // 결과 표시
+      console.log("After showResult, spinning state:", spinning);
     }
   }
 
@@ -120,46 +125,74 @@ function spinWheel() {
 
 // 룰렛 결과 확인 및 표시
 function showResult() {
-  const anglePerSlice = (2 * Math.PI) / menuItems.length;
-  const pointerAngle = (3 * Math.PI / 2 - (rotation % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
-  const index = Math.floor(pointerAngle / anglePerSlice); // 어떤 조각인지 계산
-  const selected = menuItems[index]; // 선택된 메뉴
-  window.selectedMenuItem = selected;
+  try {
+    console.log("showResult called. Current spinning state:", spinning);
+    
+    if (menuItems.length === 0) {
+        resultEl.textContent = "메뉴가 없습니다!";
+        window.selectedMenuItem = null; // 선택된 메뉴 없음
+        if (typeof handleMenuSelectionForLocation === 'function') {
+            handleMenuSelectionForLocation(); // 위치 처리 함수 호출 (메뉴 없음을 알리기 위해)
+        }
+        return;
+    }
 
-  // Call the location handling function if it exists
-  if (typeof handleMenuSelectionForLocation === 'function') {
-    handleMenuSelectionForLocation();
-  } else {
-    console.warn("handleMenuSelectionForLocation is not defined. Ensure location.js is loaded and the function is global.");
+    const anglePerSlice = (2 * Math.PI) / menuItems.length;
+    const pointerAngle = (3 * Math.PI / 2 - (rotation % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+    const index = Math.floor(pointerAngle / anglePerSlice);
+
+    const selected = menuItems[index];
+    resultEl.textContent = `오늘은 이거 👉 ${selected}! 🍽️`; // 결과 출력
+    window.selectedMenuItem = selected; // 전역 변수에 선택된 메뉴 저장
+
+    console.log("Selected item:", selected, "at index:", index);
+
+    launchConfetti(); // 폭죽
+    showPopup(selected); // 팝업
+
+    // 위치 정보 및 식당 검색 로직 호출
+    if (typeof handleMenuSelectionForLocation === 'function') {
+      handleMenuSelectionForLocation();
+    } else {
+      console.warn("handleMenuSelectionForLocation is not defined.");
+    }
+  } catch (e) {
+    console.error("Error in showResult:", e);
+    resultEl.textContent = "결과 표시에 오류가 발생했습니다.";
+    // spinning = false; // showResult에서 에러 발생 시 스핀 상태는 이미 false일 것으로 예상되나, 안전장치로 추가 가능
   }
-
-  resultEl.textContent = `오늘은 이거 👉 ${selected}! 🍽️`; // 결과 출력
-  launchConfetti(); // 폭죽
-  showPopup(selected); // 팝업
 }
 
 // 결과 팝업 보여주는 함수
 function showPopup(text) {
-  popupResult.textContent = `🎉 ${text} 🎉`;
-  popupResult.style.display = "block";
-  setTimeout(() => {
-    popupResult.style.display = "none"; // 3초 후 자동 닫힘
-  }, 3000);
+  try {
+    popupResult.textContent = `🎉 ${text} 🎉`;
+    popupResult.style.display = "block";
+    setTimeout(() => {
+      popupResult.style.display = "none"; // 3초 후 자동 닫힘
+    }, 3000);
+  } catch (e) {
+    console.error("Error in showPopup:", e);
+  }
 }
 
 // 폭죽 효과 함수
 function launchConfetti() {
-  confettiContainer.innerHTML = ''; // 초기화
-  for (let i = 0; i < 100; i++) {
-    const confetti = document.createElement("div");
-    confetti.classList.add("confetti");
-    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-    confetti.style.left = `${Math.random() * 100}%`;
-    confetti.style.animationDuration = `${2 + Math.random() * 2}s`;
-    confettiContainer.appendChild(confetti);
+  try {
+    confettiContainer.innerHTML = ''; // 초기화
+    for (let i = 0; i < 100; i++) {
+      const confetti = document.createElement("div");
+      confetti.classList.add("confetti");
+      confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+      confetti.style.left = `${Math.random() * 100}%`;
+      confetti.style.animationDuration = `${2 + Math.random() * 2}s`;
+      confettiContainer.appendChild(confetti);
 
-    // 일정 시간 후 제거
-    setTimeout(() => confetti.remove(), 4000);
+      // 일정 시간 후 제거
+      setTimeout(() => confetti.remove(), 4000);
+    }
+  } catch (e) {
+    console.error("Error in launchConfetti:", e);
   }
 }
 
@@ -237,4 +270,3 @@ menuInputEl.addEventListener("mouseenter", () => {
 menuInputEl.addEventListener("mouseleave", () => {
   tooltipEl.classList.remove("show");
 });
-
