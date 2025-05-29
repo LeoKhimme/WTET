@@ -5,16 +5,18 @@ body {
   font-family: 'Arial', sans-serif;
   background-color: #f9f9f9;
   display: flex;
-  justify-content: center;
-  align-items: center;
+  flex-direction: column; /* Ensure children stack vertically */
+  align-items: center; /* Center children horizontally */
   min-height: 100vh;
 }
 
-.container {
+.container { /* Roulette section */
   text-align: center;
   padding: 20px;
-  max-width: 500px;
+  max-width: 500px; /* Keeps roulette wheel and controls constrained */
   width: 100%;
+  margin-bottom: 30px; /* Spacing below roulette */
+  box-sizing: border-box;
 }
 
 canvas {
@@ -24,7 +26,8 @@ canvas {
   border-radius: 50%;
   margin-bottom: 20px;
   display: block;
-  margin: 0 auto;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .controls {
@@ -124,19 +127,6 @@ canvas {
   border-right: 15px solid transparent;
   border-top: 25px solid red;
   z-index: 10;
- 
-}
-
-@media screen and (max-width: 768px) {
-  canvas {
-    width: 100%;
-    height: auto;
-  
-  }
-
-  .result-popup {
-    font-size: 24px;
-  }
 }
 
 .tooltip {
@@ -172,4 +162,145 @@ canvas {
   z-index: 1;
 }
 
+/* Recommendation Section and Map Styling */
+#recommendations, #map {
+  max-width: 960px; /* Max width for these content sections */
+  width: 90%; /* Responsive width */
+  margin: 30px auto; /* Vertical spacing and horizontal centering */
+  box-sizing: border-box;
+}
 
+#map {
+  height: 400px;
+  background-color: #f0f0f0; /* Placeholder background */
+  border-radius: 8px; /* Consistent with cards */
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1); /* Subtle shadow */
+}
+
+.recommendation-section {
+  padding: 20px; /* Padding inside the section */
+  text-align: center;
+  /* Removed width: 100% as max-width and margin:auto handle it */
+  background-color: #fff; /* Optional: background for the section itself */
+  border-radius: 8px; /* Consistent with cards */
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1); /* Subtle shadow */
+}
+
+.restaurant-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center; /* Center cards if there's space, or space-around for full rows */
+  gap: 20px;
+  max-width: 1200px; /* List can be wider if section allows, but constrained by section's 960px */
+  margin: 0 auto;
+}
+
+.restaurant-card {
+  flex: 1 1 280px; /* Grow and shrink from a base of 280px */
+  min-width: 280px; /* Don't get smaller than 280px */
+  max-width: 310px; /* Don't grow beyond 310px (approx 3 per row in 960px) */
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
+  text-align: left;
+  background-color: #fff;
+  display: flex; /* For internal vertical alignment if needed */
+  flex-direction: column;
+}
+
+.restaurant-thumbnail {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 10px;
+  border-radius: 4px 4px 0 0; /* Rounded top corners */
+}
+
+.restaurant-info {
+  flex-grow: 1; /* Allows info to take remaining space if cards have varying content height */
+  display: flex;
+  flex-direction: column;
+}
+
+.restaurant-info h3 {
+  margin-top: 0;
+  margin-bottom: 10px; /* Spacing below title */
+  font-size: 1.2em;
+  color: #333;
+}
+
+.restaurant-info p {
+  margin: 4px 0; /* Tighter spacing for address/rating */
+  font-size: 0.9em;
+  color: #555;
+  line-height: 1.4;
+}
+.restaurant-info p.restaurant-address {
+  margin-bottom: 8px; /* More space after address */
+}
+
+
+/* General Responsiveness */
+@media screen and (max-width: 768px) { /* Tablet and below */
+  .container {
+    max-width: 95%; /* Allow roulette container to be a bit wider */
+  }
+  
+  canvas {
+    /* Already max-width 100%, so it scales */
+  }
+
+  .result-popup {
+    font-size: 24px; /* Smaller popup text */
+  }
+
+  #recommendations, #map {
+    width: 95%; /* Sections take more width */
+    margin: 20px auto; /* Slightly reduced vertical margin */
+  }
+
+  .restaurant-list {
+    gap: 15px; /* Reduced gap for cards */
+  }
+  
+  /* For 2 cards per row on medium screens if 960px was too tight for 3 */
+  /* The flex properties on .restaurant-card should handle this naturally.
+     If 280px min + gap is too wide for 2 cards, they will wrap to 1.
+     Let's see how flex: 1 1 280px behaves first.
+     If explicit 2-column is needed for a specific range:
+  */
+  /* @media screen and (min-width: 641px) and (max-width: 991px) {
+    .restaurant-card {
+      flex-basis: calc(50% - 15px); 
+      max-width: calc(50% - 15px);
+    }
+  } */
+}
+
+@media screen and (max-width: 640px) { /* Mobile phones */
+  .restaurant-card {
+    flex-basis: calc(100% - 20px); /* Almost full width, accounts for potential parent padding */
+    max-width: 400px; /* Max width for a single card on small screens */
+    margin-left: auto; /* Center card if it's narrower than list */
+    margin-right: auto;
+  }
+
+  #recommendations, #map {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  
+  .controls input, .controls button {
+    font-size: 15px; /* Slightly smaller control font */
+  }
+  .spin-button {
+    font-size: 18px; /* Slightly smaller spin button */
+  }
+}
+
+/* No specific changes needed for max-width: 400px for restaurant-card, 
+   as 640px rule already makes it nearly full width.
+   The max-width: 400px on the card itself prevents it from being too wide.
+*/

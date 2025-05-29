@@ -89,8 +89,74 @@ function findRestaurants(menuItem, searchLocation) {
     if (status === google.maps.places.PlacesServiceStatus.OK && results) {
       if (results.length === 0) {
         alert(`No restaurants found serving "${menuItem}" nearby.`);
+        // Clear previous recommendations if no results
+        const recommendationsSection = document.getElementById('recommendations');
+        const restaurantListDiv = recommendationsSection.querySelector('.restaurant-list');
+        restaurantListDiv.innerHTML = '<p>No restaurants found for this search.</p>';
+        // recommendationsSection.style.display = 'block'; // Or 'none' if you prefer to hide the section
         return;
       }
+
+      // 1. Calculate scores and add to each place object
+      results.forEach(place => {
+        const rating = place.rating || 0;
+        const reviews = place.user_ratings_total || 0;
+        place.calculated_score = rating * reviews;
+      });
+
+      // 2. Sort places by calculated_score descending
+      // Create a copy for sorting to preserve original order for map markers if needed,
+      // though current map marker logic iterates after this and uses the sorted 'results'.
+      // If map markers should show all unsorted results, use a copy for sorting:
+      // const sortedResults = [...results].sort((a, b) => b.calculated_score - a.calculated_score);
+      // For now, we'll sort in-place as map markers are added from the (now sorted) 'results' array.
+      results.sort((a, b) => b.calculated_score - a.calculated_score);
+      
+      // 3. Get top 3 (or fewer if less than 3 results)
+      const topRestaurants = results.slice(0, 3);
+
+      // 4. Display these top 3 in the #recommendations section
+      const recommendationsSection = document.getElementById('recommendations');
+      const restaurantListDiv = recommendationsSection.querySelector('.restaurant-list');
+      
+      // Clear previous recommendations
+      restaurantListDiv.innerHTML = ''; 
+
+      if (topRestaurants.length > 0 && topRestaurants[0].calculated_score > 0) { // Only show if there are scored recommendations
+        // recommendationsSection.style.display = 'block'; // Already visible by default from HTML/CSS changes
+
+        topRestaurants.forEach(place => {
+          if (place.calculated_score === 0 && topRestaurants.length === 1 && results.length > 3) {
+            // If the only "top" restaurant has a score of 0, and there are other restaurants,
+            // it might be better to show "no specific recommendations"
+            // This check is a bit nuanced; adjust as needed.
+            // For now, we proceed to show it if it's in topRestaurants.
+          }
+
+          const card = document.createElement('div');
+          card.classList.add('restaurant-card');
+
+          let photoUrl = 'https://via.placeholder.com/300x180.png?text=Restaurant+Image'; // Default placeholder
+          if (place.photos && place.photos.length > 0) {
+            photoUrl = place.photos[0].getUrl({'maxWidth': 300, 'maxHeight': 180});
+          }
+
+          card.innerHTML = `
+              <img src="${photoUrl}" alt="${place.name || 'Restaurant image'}" class="restaurant-thumbnail">
+              <div class="restaurant-info">
+                  <h3 class="restaurant-name">${place.name || 'N/A'}</h3>
+                  <p class="restaurant-address">${place.vicinity || 'Address not available'}</p>
+                  <p class="restaurant-rating">Rating: ${place.rating || 'N/A'} (${place.user_ratings_total || 0} reviews)</p>
+                  <!-- <p>Score: ${place.calculated_score.toFixed(2)}</p> -->
+              </div>
+          `;
+          restaurantListDiv.appendChild(card);
+        });
+      } else {
+        restaurantListDiv.innerHTML = '<p>No specific recommendations based on score, but check the map for nearby options!</p>';
+      }
+
+      // Map markers for ALL results (iterates over the potentially sorted 'results' array)
       results.forEach(place => {
         const marker = new google.maps.Marker({
           map: map,
