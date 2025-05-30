@@ -178,129 +178,143 @@ canvas {
 }
 
 .recommendation-section {
+  /* Existing max-width and margin:auto from #recommendations selector handle overall placement */
   padding: 20px; /* Padding inside the section */
+  /* text-align: center; /* Centering text if section title is added directly here */
+  background-color: #fdfdfd; /* Slightly off-white background for the section */
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.recommendation-section h2 { /* Styling for the "추천 식당" title */
   text-align: center;
-  /* Removed width: 100% as max-width and margin:auto handle it */
-  background-color: #fff; /* Optional: background for the section itself */
-  border-radius: 8px; /* Consistent with cards */
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1); /* Subtle shadow */
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #333;
 }
 
 .restaurant-list {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center; /* Center cards if there's space, or space-around for full rows */
-  gap: 20px;
-  max-width: 1200px; /* List can be wider if section allows, but constrained by section's 960px */
-  margin: 0 auto;
+  justify-content: space-around; /* Distribute cards evenly */
+  gap: 15px; /* Space between cards */
+  /* max-width: 1200px; /* Not strictly needed if #recommendations constrains width */
+  margin: 0 auto; /* Center the list if it's narrower than its container */
 }
 
 .restaurant-card {
-  flex: 1 1 280px; /* Grow and shrink from a base of 280px */
-  min-width: 280px; /* Don't get smaller than 280px */
-  max-width: 310px; /* Don't grow beyond 310px (approx 3 per row in 960px) */
+  flex: 0 1 calc(33.333% - 15px); /* Aim for 3 cards per row, accounting for gap. No grow. */
+  min-width: 280px; /* Minimum width before wrapping or shrinking too much */
+  box-sizing: border-box;
   border: 1px solid #ddd;
   border-radius: 8px;
-  padding: 15px;
-  box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
-  text-align: left;
   background-color: #fff;
-  display: flex; /* For internal vertical alignment if needed */
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  display: flex;
   flex-direction: column;
+  min-height: 380px; /* Consistent height for cards */
+  padding: 0; /* Remove padding from card itself, image will be flush */
+  margin-bottom: 15px; /* Space when cards wrap */
+  overflow: hidden; /* Ensure child elements like images with border-radius behave */
+}
+
+.restaurant-card-empty {
+  /* Inherits from .restaurant-card: flex properties, min-width, box-sizing, border, border-radius, background, shadow, display, flex-direction, min-height, margin-bottom */
+  /* Additional styles for empty state */
+  padding: 15px; /* Add padding back for empty card content */
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #777;
 }
 
 .restaurant-thumbnail {
   width: 100%;
-  height: 180px;
+  height: 180px; /* Fixed height for the image */
   object-fit: cover;
-  border-bottom: 1px solid #eee;
-  margin-bottom: 10px;
-  border-radius: 4px 4px 0 0; /* Rounded top corners */
+  /* border-radius: 4px 4px 0 0; /* Rounded top corners if card padding was non-zero */
+  /* margin-bottom: 10px; /* Replaced by padding in .restaurant-info */
+  /* border-bottom: 1px solid #eee; /* Optional: if image needs separation */
 }
 
 .restaurant-info {
-  flex-grow: 1; /* Allows info to take remaining space if cards have varying content height */
+  padding: 15px; /* Padding for the text content area */
   display: flex;
   flex-direction: column;
+  flex-grow: 1; /* Ensure this area takes up remaining space */
 }
 
-.restaurant-info h3 {
-  margin-top: 0;
-  margin-bottom: 10px; /* Spacing below title */
+.restaurant-name { /* Targets h3 inside .restaurant-info */
   font-size: 1.2em;
+  font-weight: bold;
+  margin-top: 0;
+  margin-bottom: 10px; /* Increased bottom margin for better separation */
   color: #333;
 }
 
-.restaurant-info p {
-  margin: 4px 0; /* Tighter spacing for address/rating */
+.restaurant-phone,
+.restaurant-distance,
+.restaurant-address,
+.restaurant-rating {
   font-size: 0.9em;
   color: #555;
+  margin-bottom: 6px; /* Consistent spacing for these details */
   line-height: 1.4;
 }
-.restaurant-info p.restaurant-address {
-  margin-bottom: 8px; /* More space after address */
+.restaurant-info p:last-child { /* Remove margin from the last p element in info */
+    margin-bottom: 0;
+}
+
+
+.empty-card-message { /* Specific style for the text in an empty card */
+  font-size: 1em;
+  color: #888;
 }
 
 
 /* General Responsiveness */
-@media screen and (max-width: 768px) { /* Tablet and below */
-  .container {
-    max-width: 95%; /* Allow roulette container to be a bit wider */
-  }
-  
-  canvas {
-    /* Already max-width 100%, so it scales */
-  }
-
-  .result-popup {
-    font-size: 24px; /* Smaller popup text */
-  }
-
-  #recommendations, #map {
-    width: 95%; /* Sections take more width */
-    margin: 20px auto; /* Slightly reduced vertical margin */
-  }
-
-  .restaurant-list {
-    gap: 15px; /* Reduced gap for cards */
-  }
-  
-  /* For 2 cards per row on medium screens if 960px was too tight for 3 */
-  /* The flex properties on .restaurant-card should handle this naturally.
-     If 280px min + gap is too wide for 2 cards, they will wrap to 1.
-     Let's see how flex: 1 1 280px behaves first.
-     If explicit 2-column is needed for a specific range:
-  */
-  /* @media screen and (min-width: 641px) and (max-width: 991px) {
+@media screen and (max-width: 991px) { /* Tablets and potentially smaller desktops */
     .restaurant-card {
-      flex-basis: calc(50% - 15px); 
-      max-width: calc(50% - 15px);
+        flex-basis: calc(50% - 10px); /* 2 cards per row, adjust gap if needed */
+        /* min-width still applies */
     }
-  } */
+    #recommendations, #map {
+        width: 95%;
+    }
 }
+
 
 @media screen and (max-width: 640px) { /* Mobile phones */
   .restaurant-card {
-    flex-basis: calc(100% - 20px); /* Almost full width, accounts for potential parent padding */
+    flex-basis: calc(100% - 20px); /* Single card per row */
     max-width: 400px; /* Max width for a single card on small screens */
-    margin-left: auto; /* Center card if it's narrower than list */
+    margin-left: auto;
     margin-right: auto;
   }
 
+  .container {
+    max-width: 95%;
+  }
+
+  .result-popup {
+    font-size: 24px;
+  }
+
   #recommendations, #map {
-    padding-left: 10px;
+    width: 95%;
+    margin: 20px auto;
+    padding-left: 10px; /* Ensure content doesn't touch edges */
     padding-right: 10px;
+  }
+
+  .restaurant-list {
+    gap: 10px;
   }
   
   .controls input, .controls button {
-    font-size: 15px; /* Slightly smaller control font */
+    font-size: 15px;
   }
   .spin-button {
-    font-size: 18px; /* Slightly smaller spin button */
+    font-size: 18px;
   }
 }
-
-/* No specific changes needed for max-width: 400px for restaurant-card, 
-   as 640px rule already makes it nearly full width.
-   The max-width: 400px on the card itself prevents it from being too wide.
-*/

@@ -63,8 +63,7 @@ function findRestaurants(menuItem, searchLocation) {
   }
   if (!searchLocation) {
     console.error("User location not available.");
-    // Attempt to center map on default if user location denied but map exists
-    const defaultCenter = { lat: 37.5665, lng: 126.9780 }; // Default if no location
+    const defaultCenter = { lat: 37.5665, lng: 126.9780 };
     map.setCenter(defaultCenter);
     alert("Location not available. Showing default map area. Please allow location access and try spinning the wheel again.");
     return;
@@ -73,7 +72,6 @@ function findRestaurants(menuItem, searchLocation) {
   console.log(`Searching for restaurants serving: ${menuItem} near`, searchLocation);
   map.setCenter(searchLocation);
 
-  // Clear previous markers
   markers.forEach(marker => marker.setMap(null));
   markers = [];
 
@@ -82,89 +80,133 @@ function findRestaurants(menuItem, searchLocation) {
     location: new google.maps.LatLng(searchLocation.lat, searchLocation.lng),
     radius: '5000', // 5km radius
     keyword: menuItem,
-    type: ['restaurant'] // Search for restaurants
+    type: ['restaurant']
   };
 
   placesService.nearbySearch(request, (results, status) => {
-    if (status === google.maps.places.PlacesServiceStatus.OK && results) {
-      if (results.length === 0) {
-        alert(`No restaurants found serving "${menuItem}" nearby.`);
-        // Clear previous recommendations if no results
-        const recommendationsSection = document.getElementById('recommendations');
-        const restaurantListDiv = recommendationsSection.querySelector('.restaurant-list');
-        restaurantListDiv.innerHTML = '<p>No restaurants found for this search.</p>';
-        // recommendationsSection.style.display = 'block'; // Or 'none' if you prefer to hide the section
-        return;
-      }
+    const recommendationsSection = document.getElementById('recommendations');
+    const restaurantListDiv = recommendationsSection.querySelector('.restaurant-list');
+    restaurantListDiv.innerHTML = ''; // Clear previous recommendations early
 
-      // 1. Calculate scores and add to each place object
+    if (status === google.maps.places.PlacesServiceStatus.OK && results && results.length > 0) {
       results.forEach(place => {
         const rating = place.rating || 0;
         const reviews = place.user_ratings_total || 0;
         place.calculated_score = rating * reviews;
       });
 
-      // 2. Sort places by calculated_score descending
-      // Create a copy for sorting to preserve original order for map markers if needed,
-      // though current map marker logic iterates after this and uses the sorted 'results'.
-      // If map markers should show all unsorted results, use a copy for sorting:
-      // const sortedResults = [...results].sort((a, b) => b.calculated_score - a.calculated_score);
-      // For now, we'll sort in-place as map markers are added from the (now sorted) 'results' array.
       results.sort((a, b) => b.calculated_score - a.calculated_score);
       
-      // 3. Get top 3 (or fewer if less than 3 results)
       const topRestaurants = results.slice(0, 3);
 
-      // 4. Display these top 3 in the #recommendations section
-      const recommendationsSection = document.getElementById('recommendations');
-      const restaurantListDiv = recommendationsSection.querySelector('.restaurant-list');
-      
-      // Clear previous recommendations
-      restaurantListDiv.innerHTML = ''; 
+      if (topRestaurants.length > 0 && topRestaurants.some(p => p.calculated_score > 0)) {
+        const detailPromises = topRestaurants.map(place => {
+          return new Promise((resolve, reject) => {
+            const placeDetailRequest = {
+              placeId: place.place_id,
+              fields: ['formatted_phone_number', 'name', 'geometry', 'vicinity', 'rating', 'user_ratings_total', 'photos'] // Ensure all needed fields
+            };
+            placesService.getDetails(placeDetailRequest, (detailedPlace, detailStatus) => {
+              if (detailStatus === google.maps.places.PlacesServiceStatus.OK && detailedPlace) {
+                // Overwrite or augment the original place object with details
+                place.formatted_phone_number = detailedPlace.formatted_phone_number || 'N/A';
+                place.name = detailedPlace.name || place.name; // Prefer detailed name
+                place.vicinity = detailedPlace.vicinity || place.vicinity;
+                place.rating = detailedPlace.rating !== undefined ? detailedPlace.rating : place.rating;
+                place.user_ratings_total = detailedPlace.user_ratings_total !== undefined ? detailedPlace.user_ratings_total : place.user_ratings_total;
+                place.photos = detailedPlace.photos || place.photos; // Prefer detailed photos
 
-      if (topRestaurants.length > 0 && topRestaurants[0].calculated_score > 0) { // Only show if there are scored recommendations
-        // recommendationsSection.style.display = 'block'; // Already visible by default from HTML/CSS changes
-
-        topRestaurants.forEach(place => {
-          if (place.calculated_score === 0 && topRestaurants.length === 1 && results.length > 3) {
-            // If the only "top" restaurant has a score of 0, and there are other restaurants,
-            // it might be better to show "no specific recommendations"
-            // This check is a bit nuanced; adjust as needed.
-            // For now, we proceed to show it if it's in topRestaurants.
-          }
-
-          const card = document.createElement('div');
-          card.classList.add('restaurant-card');
-
-          let photoUrl = 'https://via.placeholder.com/300x180.png?text=Restaurant+Image'; // Default placeholder
-          if (place.photos && place.photos.length > 0) {
-            photoUrl = place.photos[0].getUrl({'maxWidth': 300, 'maxHeight': 180});
-          }
-
-          card.innerHTML = `
-              <img src="${photoUrl}" alt="${place.name || 'Restaurant image'}" class="restaurant-thumbnail">
-              <div class="restaurant-info">
-                  <h3 class="restaurant-name">${place.name || 'N/A'}</h3>
-                  <p class="restaurant-address">${place.vicinity || 'Address not available'}</p>
-                  <p class="restaurant-rating">Rating: ${place.rating || 'N/A'} (${place.user_ratings_total || 0} reviews)</p>
-                  <!-- <p>Score: ${place.calculated_score.toFixed(2)}</p> -->
-              </div>
-          `;
-          restaurantListDiv.appendChild(card);
+                if (userLocation && detailedPlace.geometry && detailedPlace.geometry.location && google.maps.geometry && google.maps.geometry.spherical) {
+                  try {
+                    const distanceInMeters = google.maps.geometry.spherical.computeDistanceBetween(
+                      new google.maps.LatLng(userLocation.lat, userLocation.lng),
+                      detailedPlace.geometry.location
+                    );
+                    place.distance = (distanceInMeters / 1000).toFixed(1) + ' km';
+                  } catch (e) {
+                    console.error("Error calculating distance:", e);
+                    place.distance = 'N/A';
+                  }
+                } else {
+                  place.distance = 'N/A';
+                  if (!google.maps.geometry || !google.maps.geometry.spherical) {
+                    console.warn('Google Maps Geometry library not loaded, cannot calculate distance.');
+                  }
+                }
+                resolve(place); // Resolve with the augmented original place object
+              } else {
+                console.error(`Place details request failed for ${place.name || place.place_id} with status: ${detailStatus}`);
+                // Augment with N/A to avoid breaking card structure
+                place.formatted_phone_number = 'N/A';
+                place.distance = 'N/A';
+                resolve(place); // Resolve with partial data
+              }
+            });
+          });
         });
-      } else {
-        restaurantListDiv.innerHTML = '<p>No specific recommendations based on score, but check the map for nearby options!</p>';
+
+        Promise.all(detailPromises)
+          .then(detailedTopRestaurants => {
+            restaurantListDiv.innerHTML = ''; // Clear previous recommendations
+
+            for (let i = 0; i < 3; i++) {
+              const place = detailedTopRestaurants[i];
+              const card = document.createElement('div');
+              card.classList.add('restaurant-card');
+
+              if (place && (place.calculated_score > 0 || !place.hasOwnProperty('calculated_score'))) { // Display if place exists and has score, or if score is not applicable (e.g. direct search not yet scored)
+                let photoUrl = 'https://via.placeholder.com/400x200.png?text=Restaurant+Image';
+                if (place.photos && place.photos.length > 0) {
+                  photoUrl = place.photos[0].getUrl({'maxWidth': 400, 'maxHeight': 200});
+                }
+                card.innerHTML = `
+                    <img src="${photoUrl}" alt="${place.name || 'Restaurant image'}" class="restaurant-thumbnail">
+                    <div class="restaurant-info">
+                        <h3 class="restaurant-name">${place.name || 'N/A'}</h3>
+                        <p class="restaurant-phone">Tel: ${place.formatted_phone_number || 'N/A'}</p>
+                        <p class="restaurant-distance">Distance: ${place.distance || 'N/A'}</p>
+                        <p class="restaurant-address">Address: ${place.vicinity || 'N/A'}</p>
+                        <p class="restaurant-rating">Rating: ${place.rating || 'N/A'} (${place.user_ratings_total || 0} reviews)</p>
+                    </div>
+                `;
+              } else {
+                card.classList.add('restaurant-card-empty');
+                card.innerHTML = '<p class="empty-card-message">No restaurant found for this slot</p>';
+              }
+              restaurantListDiv.appendChild(card);
+            }
+          })
+          .catch(error => {
+            console.error("Error processing place details:", error);
+            restaurantListDiv.innerHTML = ''; // Clear on error too
+            for (let i = 0; i < 3; i++) {
+              const card = document.createElement('div');
+              card.classList.add('restaurant-card', 'restaurant-card-empty');
+              card.innerHTML = '<p class="empty-card-message">Error loading details</p>';
+              restaurantListDiv.appendChild(card);
+            }
+          });
+
+      } else { // No top restaurants with score > 0, or no topRestaurants array populated
+        restaurantListDiv.innerHTML = ''; // Clear previous
+        for (let i = 0; i < 3; i++) {
+          const card = document.createElement('div');
+          card.classList.add('restaurant-card', 'restaurant-card-empty');
+          // Message reflects that no suitable (scored) restaurants were found from the search
+          card.innerHTML = '<p class="empty-card-message">No specific recommendations found</p>';
+          restaurantListDiv.appendChild(card);
+        }
       }
 
-      // Map markers for ALL results (iterates over the potentially sorted 'results' array)
+      // Map markers for ALL results from the initial nearbySearch (results array)
+      // This ensures all found places are on map, not just top 3 detailed ones.
       results.forEach(place => {
         const marker = new google.maps.Marker({
           map: map,
-          position: place.geometry.location,
+          position: place.geometry.location, // This should be a LatLng from nearbySearch
           title: place.name
         });
 
-        // Add an InfoWindow
         const infowindow = new google.maps.InfoWindow({
           content: `<strong>${place.name}</strong><br>
                         Rating: ${place.rating || 'N/A'}<br>
@@ -172,20 +214,32 @@ function findRestaurants(menuItem, searchLocation) {
         });
 
         marker.addListener('click', () => {
-          // Close other open info windows
-          markers.forEach(m => {
-              if (m.infowindow) m.infowindow.close();
-          });
+          markers.forEach(m => { if (m.infowindow) m.infowindow.close(); });
           infowindow.open(map, marker);
-          marker.infowindow = infowindow; // Store it to close later
+          marker.infowindow = infowindow;
         });
         markers.push(marker);
       });
+
     } else if (status === google.maps.places.PlacesServiceStatus.ZERO_RESULTS) {
-      alert(`No restaurants found serving "${menuItem}" nearby.`);
-    } else {
+      // alert(`No restaurants found serving "${menuItem}" nearby.`); // Alert is optional
+      restaurantListDiv.innerHTML = ''; // Clear previous
+      for (let i = 0; i < 3; i++) {
+        const card = document.createElement('div');
+        card.classList.add('restaurant-card', 'restaurant-card-empty');
+        card.innerHTML = `<p class="empty-card-message">No restaurants found for "${menuItem}"</p>`;
+        restaurantListDiv.appendChild(card);
+      }
+    } else { // Other errors like API error, OVER_QUERY_LIMIT etc.
       console.error("PlacesService failed:", status);
-      alert("Failed to find restaurants. Please check console for details.");
+      // alert("Failed to find restaurants. Please check console for details."); // Alert is optional
+      restaurantListDiv.innerHTML = ''; // Clear previous
+      for (let i = 0; i < 3; i++) {
+        const card = document.createElement('div');
+        card.classList.add('restaurant-card', 'restaurant-card-empty');
+        card.innerHTML = '<p class="empty-card-message">Restaurant search failed</p>';
+        restaurantListDiv.appendChild(card);
+      }
     }
   });
 }
