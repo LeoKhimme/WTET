@@ -183,9 +183,18 @@ function findRestaurants(menuItem, searchLocation) {
       });
     } else if (status === google.maps.places.PlacesServiceStatus.ZERO_RESULTS) {
       alert(`No restaurants found serving "${menuItem}" nearby.`);
+    } else if (status === google.maps.places.PlacesServiceStatus.REQUEST_DENIED) {
+      console.error("PlacesService failed: REQUEST_DENIED", status);
+      alert("Failed to find restaurants: Request Denied. This often indicates a problem with the Google Maps API key, such as an invalid key, the Places API not being enabled for this key, or billing issues. Please check the Google Cloud Console and the browser's developer console for more details.");
+    } else if (status === google.maps.places.PlacesServiceStatus.OVER_QUERY_LIMIT) {
+      console.error("PlacesService failed: OVER_QUERY_LIMIT", status);
+      alert("Failed to find restaurants: Over Query Limit. The application has exceeded its request quota for the Google Places API. Please check your API usage and quotas in the Google Cloud Console.");
+    } else if (status === google.maps.places.PlacesServiceStatus.INVALID_REQUEST) {
+      console.error("PlacesService failed: INVALID_REQUEST", status);
+      alert("Failed to find restaurants: Invalid Request. This may be due to an issue with the search parameters or potentially related to API key configuration. Check the browser's developer console for more details.");
     } else {
-      console.error("PlacesService failed:", status);
-      alert("Failed to find restaurants. Please check console for details.");
+      console.error("PlacesService failed with status:", status);
+      alert("Failed to find restaurants due to an unexpected error. Please check the browser's developer console for more details and the specific status code.");
     }
   });
 }
